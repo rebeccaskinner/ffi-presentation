@@ -1,0 +1,28 @@
+Understanding the Haskell FFI: Part 1, Calling Native Functions
+
+1. Background
+
+1.1 Introduction
+The haskell foreign function interface (ffi) is a mechanism for
+interoperability between haskell and non-haskell libraries.  The FFI defines
+both the mechanisms by which haskell applications may access functions provided
+by foreign libraries, as well as how haskell functions may be exported so that
+they may be used in foreign applications.  In this article I will focus
+exclusively on accessing foreign functions from within Haskell applications.
+Except where otherwise noted, in this article I will focus on the specific
+mechanisms used for linking ELF executables on Linux systems on the x86_64
+architecture.  Although the FFI is a portable part of the Haskell language
+specification and should be supported on any system that supports a compliant
+haskell compiler I have chosen to narrow the topic of discussion in order to
+provide some concrete examples of how these mechanisms are implemented.  The
+platform I'm using as an example is well documented and the ideas should be
+generally transferrable to other platforms.
+
+
+
+
+References:
+
+The Haskell 98 Foreign Function Interface 1.0: An Addendum to the Haskell 98 Report
+http://www.cse.unsw.edu.au/~chak/haskell/ffi/ffi/ffi.html
+
