@@ -1,0 +1,58 @@
+\documentclass{beamer}
+\title{Understanding The Haskell FFI}
+\author{Tim Skinner \\ {\small tim@timskinner.net}}
+\date{\today}
+\mode<presentation> { \usetheme{Berlin} }
+
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{times}
+\usepackage[T1]{fontenc}
+
+\AtBeginSubsection[]
+{
+    \begin{frame}<beamer>{Outline}
+        \tableofcontents[currentsection,currentsubsection]
+    \end{frame}
+}
+
+\begin{document}
+\begin{frame}
+    \titlepage
+\end{frame}
+
+\section*{Outline}
+\begin{frame}
+    \begin{tiny}
+        \tableofcontents
+    \end{tiny}
+\end{frame}
+
+\section{Introduction}
+\subsection{What is the FFI?}
+\subsection{About the examples}
+
+\section{Linkers and Loaders}
+\subsection{The ELF File Format}
+\subsection{Static and Dynamic Linking}
+\subsection{Calling Conventions}
+
+\section{Data Types}
+\subsection{Foreign Types}
+\subsection{The Storable Typeclass}
+
+\section{Function Calls}
+\subsection{Purity and Side Effects}
+\subsection{Function Pointers}
+
+\section{Native Functions}
+\subsection{Declaring Native Functions}
+\subsection{Compilation and Linking}
+
+\section{Accessing Haskell Functions from Foreign Code}
+\subsection{Declaring Native-Accessible Functions}
+\subsection{Compilation}
+\begin{frame}
+\end{frame}
+
+\end{document}
