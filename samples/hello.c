@@ -1,3 +1,5 @@
+/* GNU99 C Source; compile with gcc -std=gnu99 */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 

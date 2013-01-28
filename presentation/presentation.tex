@@ -1,6 +1,7 @@
+
 \documentclass{beamer}
 \title{Understanding The Haskell FFI}
-\author{Tim Skinner \\ {\small tim@timskinner.net}}
+\author{Tim Skinner}
 \date{\today}
 \mode<presentation> { \usetheme{Berlin} }
 
@@ -8,15 +9,32 @@
 \usepackage[latin1]{inputenc}
 \usepackage{times}
 \usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
 
-\AtBeginSubsection[]
-{
-    \begin{frame}<beamer>{Outline}
-        \tableofcontents[currentsection,currentsubsection]
-    \end{frame}
+\definecolor{comment}{rgb}{0,0.6,0}
+\definecolor{keyword}{rgb}{0,0,0.6}
+\definecolor{string}{rgb}{0.58,0,0.82}
+
+\lstset {
+    backgroundcolor=\color{white},
+    basicstyle=\tiny,
+    keywordstyle=\color{keyword},
+    commentstyle=\color{comment},
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    stringstyle=\color{string},
+    tabsize=4
+}
+
+\newcommand{\chref}[3] {
+    {\color{#1} \href{#2}{\underline{#3}}}
 }
 
 \begin{document}
+
 \begin{frame}
     \titlepage
 \end{frame}
@@ -29,22 +47,110 @@
 \end{frame}
 
 \section{Introduction}
-\subsection{What is the FFI?}
-\subsection{About the examples}
+\begin{frame}
+    \frametitle{What is the FFI?}
+    The FFI allows Haskell code to interoperate with Native code.
+    \begin{enumerate}
+        \item{Allow Haskell applications to call native functions}
+        \item{Make functions in a Haskell application available to native
+            applications}
+    \end{enumerate}
+\end{frame}
 
-\section{Data Types}
-\subsection{Foreign Types}
-\subsection{Haskell Types}
-\subsection{The Storable Typeclass}
+\begin{frame}
+    \frametitle{What is Native code?}
+
+    The \chref{darkgray}
+    {http://www.cse.unsw.edu.au/~chak/haskell/ffi/ffi/ffi.html} {Haskell 98
+    Addendum on FFI} defines a mechanism for interoperating with code that uses
+    the platforms C calling convention.
+
+    The standard leaves room for implementations to support other conventions,
+    such as C++ or Java, but these are not supported by GHC.
+\end{frame}
+
+\begin{frame}
+    \frametitle{A Brief Aside on Platform Dependence}
+
+    Since the FFI deals with implementation defined and platform specific code,
+    we will pick a reference platform for the examples.  In this case:
+
+    \begin{itemize}
+        \item {GNU + Linux}
+        \item {\chref{darkgray}{http://www.uclibc.org/docs/psABI-x86_64.pdf}{AMD64 System V ABI}}
+        \item {\chref{darkgray}{http://downloads.openwatcom.org/ftp/devel/docs/elf-64-gen.pdf}{ELF64 File Format}}
+        \item {GHC 7.4}
+        \item {GCC 4.7}
+        \item {libc 4.6}
+    \end{itemize}
+\end{frame}
+
+\section{Background}
+\begin{frame}
+    \frametitle{But first... some background information}
+
+    To understand how the FFI works we need to dig into how the underlying
+    platform works.  Let's look at how our sample platform handles:
+
+    \begin{itemize}
+        \item {Building Programs}
+        \item {Executable Formats}
+        \item {Runtime Linking}
+        \item {Calling Functions}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle {Our first example - {\tt hello.c}}
+    \lstinputlisting[language=C]{"../samples/hello.c"}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Compiling Files}
+
+    Let's compile our source file:
+
+    {\tt gcc -std=gnu99 -c hello.c -o hello.o}
+
+    And then look at what's inside of the resulting object file:
+
+    {\tt readelf -a hello.o}
+
+    Oh my! That's rather nasty looking.  Let's move on for now.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Assembling Programs}
+
+    An object file isn't particularly useful, let's make this a real program:
+
+    {\tt gcc hello.o -o hello}
+
+    And take a look at the resulting file:
+
+    {\tt readelf -a hello}
+
+    Even worse!  What is this madness?
+\end{frame}
+
+\begin{frame}
+    \frametitle{The ELF File Format}
+
+\end{frame}
+
+\section{Marshalling}
+% \subsection{Foreign Types}
+% \subsection{Haskell Types}
+% \subsection{The Storable Typeclass}
 
 \section{Functions}
-\subsection{Calling Native Functions}
-\subsection{Exposing Haskell Functions}
-\subsection{Purity}
+% \subsection{Calling Native Functions}
+% \subsection{Exposing Haskell Functions}
+% \subsection{Purity}
 
 \section{Tools}
-\subsection{Compilation and Linking}
-\subsection{Automated Wrappers}
+% \subsection{Compilation and Linking}
+% \subsection{Automated Wrappers}
 
 \section{Idioms}
 
