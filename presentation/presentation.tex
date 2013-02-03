@@ -108,6 +108,14 @@
 \end{frame}
 
 \begin{frame}
+    \frametitle{Getting Into Specifics}
+
+    Let's take a look at example.  We'll create a program in C that calls a
+    function, {\tt generate\_message}, and see what happens.
+
+\end{frame}
+
+\begin{frame}
     \frametitle {Our first example - {\tt hello.c}}
     \lstinputlisting[language=C]{"../samples/hello_c/hello.c"}
 \end{frame}
@@ -165,6 +173,20 @@ Symbol table '.symtab' contains 14 entries:
 \end{frame}
 
 \begin{frame}[fragile]
+    \frametitle{A Side Note on C++}
+
+    If we'd used a C++ compiler to compile our code, the entry with our
+    {\tt generate\_message} symbol would have looked more like this:
+
+    \fbox{\parbox{\linewidth}{\begin{tiny}
+        {\tt 52: 00000000004005ac    52 FUNC    GLOBAL DEFAULT   13 \_Z16generate\_messagePKc}
+    \end{tiny}}}
+
+    C++ uses name mangling to manage polymorphism.  You can get around this by
+    using {\tt extern "C"}, but we are just going to avoid it for this talk.
+\end{frame}
+
+\begin{frame}[fragile]
     \frametitle{ELF Object File .text Relocations}
     \begin{tiny}
         \begin{verbatim}
@@ -191,6 +213,13 @@ Relocation section '.rela.text' at offset 0x678 contains 6 entries:
 \end{frame}
 
 \begin{frame}
+    \frametitle{Moving On}
+
+    So we have symbols and relocations for our function.  What now?
+
+\end{frame}
+
+\begin{frame}
 
     \frametitle{Generating an Assembly Language File}
 
@@ -199,12 +228,17 @@ Relocation section '.rela.text' at offset 0x678 contains 6 entries:
      \cmd{gcc -S hello.c -o hello.s}
 \end{frame}
 
+
 \begin{frame}[fragile]
     \frametitle{An Excerpt from {\tt hello.s}}
 
-    \begin{lstlisting}{language={[x86masm]Assembler}}
+    \begin{lstlisting}{language={[gas]Assembler}}
+
+# The start of our function
 generate_message:
 .LFB0:
+        # .LC1, which contains "World", was pushed to %edi,
+        # which our ABI uses as the first function parameter register
         .cfi_startproc
         pushq   %rbp
         .cfi_def_cfa_offset 16
@@ -216,13 +250,33 @@ generate_message:
         movq    $0, -8(%rbp)
         movq    -24(%rbp), %rdx
         leaq    -8(%rbp), %rax
+
+        # Push .LC0, which contains "Hello, %s", into %esi, which is the
+        # second parameter register
         movl    $.LC0, %esi
         movq    %rax, %rdi
         movl    $0, %eax
         call    asprintf
         movq    -8(%rbp), %rax
         leave
-    \end{lstlisting}
+        \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+    \frametitle{The End Result}
+
+    We don't need to care much about the details of that code.  Here are our
+    takeaway points:
+
+    \begin{itemize}
+        \item{The compiler ABI defines how we generate symbol names}
+        \item{Symbol names are the keys for entries in symbol tables}
+        \item{The linker relocates code, we can find it thanks to relocations}
+        \item{The calling convention defines how we call functions}
+        \item{The FFI ensures that our haskell code interoperates with native
+              code by ensuring that the ABI and calling conventions are met}
+    \end{itemize}
+
 \end{frame}
 
 \section{Marshalling}
