@@ -157,6 +157,23 @@ Symbol table '.symtab' contains 14 entries:
     \end{tiny}
 \end{frame}
 
+\begin{frame}[fragile]
+    \frametitle{ELF Object File .text Relocations}
+    \begin{tiny}
+        \begin{verbatim}
+Relocation section '.rela.text' at offset 0x678 contains 6 entries:
+  Offset          Info           Type           Sym. Value    Sym. Name + Addend
+00000000001d  00050000000a R_X86_64_32       0000000000000000 .rodata + 0
+00000000002a  000a00000002 R_X86_64_PC32     0000000000000000 asprintf - 4
+000000000044  00050000000a R_X86_64_32       0000000000000000 .rodata + a
+000000000049  000900000002 R_X86_64_PC32     0000000000000000 generate_message - 4
+000000000059  000c00000002 R_X86_64_PC32     0000000000000000 puts - 4
+000000000065  000d00000002 R_X86_64_PC32     0000000000000000 free - 4
+        \end{verbatim}
+    \end{tiny}
+\end{frame}
+
+
 \section{Marshalling}
 % \subsection{Foreign Types}
 % \subsection{Haskell Types}
