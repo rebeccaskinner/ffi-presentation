@@ -334,6 +334,15 @@ generate_message:
         pokeByteOff :: Storable a => Ptr b -> Int -> a -> IO ()
     \end{lstlisting}
 \end{frame}
+\begin{frame}
+    \frametitle{Implementing Storable}
+
+    The functions required to implement a storable may differ on different
+    architectures.
+
+    {\tt sizeOf} should return the size, in bytes, of the data structure.
+    {\tt alignment} should return the byte alignment.  
+\end{frame}
 \begin{frame}[fragile]
     \frametitle{Storable Example}
     \begin{lstlisting}{language=haskell}
