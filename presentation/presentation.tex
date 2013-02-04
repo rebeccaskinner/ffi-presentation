@@ -288,11 +288,51 @@ generate_message:
     There are a few specific things that we need to be aware of before we get
     started:
     \begin{itemize}
-        \item{Marshalling must account for Endianness of data}
-        \item{Haskell Ints are only 28 bits wide \footnote{At a minimum}}
-        \item{Some types in C have an architecture dependent size}
-        \item{Dereferencing a pointer is a side effect}
+        \item{You may need to account for Endianness of data}
+        \item{Fundamental types may have different bit widths between Haskell
+            and C, e.g. Ints}
+        \item{The width of some types may be architecture dependant}
+        \item{Pointer operations are impure}
     \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{Pointers}
+    A pointer represents a raw machine address.  The FFI defines
+    three\footnote{There are additional pointer types defined by
+        the FFI that are analogous to C's {\tt intptr\_t} and {\tt uintptr\_t
+    } types} types of
+    pointers that we are interested in:
+    \begin{itemize}
+        \item{{\tt Ptr a} A raw machine address.  In many cases, {\tt a} is a
+            storable.}
+        \item{{\tt FunPtr a} A pointer to a foreign function.  On some
+                architectures it is possible to cast between a {\tt Ptr a} and
+            a {\tt FunPtr a}}
+        \item{{\tt StablePtr a} A pointer to a Haskell expression that will not
+                be touched by the garbage collector.  This may be necessary if
+            you exposing a native API implemented in Haskell}
+    \end{itemize}
+\end{frame}
+\begin{frame}[fragile]
+    \frametitle{Storable Typeclass}
+    \begin{lstlisting}{language=haskell}
+    class Storable a where
+        -- Minimal Complete Definition:
+        -- sizeOf,alignment
+        -- one of: peek, peekElemOff, peekByteOff
+        -- one of: poke, pokeElemOff, pokeByteOff
+
+        sizeOf      :: Storable a => a -> Int
+        alignment   :: Storable a => a -> int
+
+        peek        :: Storable a => Ptr a -> IO a
+        peekElemOff :: Storable a => Ptr a -> Int -> IO a
+        peekByteOff :: Storable a => Ptr b -> Int -> IO a
+
+        poke        :: Storable a => Ptr a -> a -> IO ()
+        pokeElemOff :: Storable a => Ptr a -> Int -> a -> IO ()
+        pokeByteOff :: Storable a => Ptr b -> Int -> a -> IO ()
+    \end{lstlisting}
 \end{frame}
 % \subsection{Foreign Types}
 % \subsection{Haskell Types}
