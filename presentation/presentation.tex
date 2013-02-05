@@ -334,6 +334,34 @@ generate_message:
         pokeByteOff :: Storable a => Ptr b -> Int -> a -> IO ()
     \end{lstlisting}
 \end{frame}
+\begin{frame}[fragile]
+    \frametitle{Storable Example}
+    \begin{lstlisting}{language=haskell}
+data NfGenMsg = NfGenMsg {packet_id :: CUInt, hw_protocol :: CUShort, hook :: CUChar}
+instance Storable NfGenMsg where
+    sizeOf _    = sizeOf (0 :: CUInt)   +
+                  sizeOf (0 :: CUShort) +
+                  sizeOf (0 :: CUChar)
+    alignment _ = 16 -- > 8 bytes so we should be 16-byte aligned on x86_64
+    peek p      = let ptr1 = castPtr p :: Ptr CUInt
+                      ptr2 = castPtr (plusPtr ptr1 (sizeOf (0 :: CUInt))) :: Ptr CUShort
+                      ptr3 = castPtr (plusPtr ptr2 (sizeOf (0 :: CUShort))) :: Ptr CUChar
+                  in do
+                      v1 <- peek ptr1
+                      v2 <- peek ptr2
+                      v3 <- peek ptr3
+                      return $ NfGenMsg (fromBigEndian v1) (fromBigEndian v2) v3
+    poke ptr (NfGenMsg pkt_id hw_proto hk) =
+                let ptr1 = (castPtr ptr) :: Ptr CUInt
+                    ptr2 = castPtr (plusPtr ptr1 (sizeOf (0 :: CUInt))) :: Ptr CUShort
+                    ptr3 = castPtr (plusPtr ptr2 (sizeOf (0 :: CUShort))) :: Ptr CUChar
+                in do
+                    poke ptr1 $ toBigEndian pkt_id
+                    poke ptr2 $ toBigEndian hw_proto
+                    poke ptr3 hk
+                    return ()
+    \end{lstlisting}
+\end{frame}
 % \subsection{Foreign Types}
 % \subsection{Haskell Types}
 % \subsection{The Storable Typeclass}
