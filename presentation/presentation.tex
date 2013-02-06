@@ -277,13 +277,6 @@ generate_message:
     available in {\tt Foreign.C.String}
 \end{frame}
 \begin{frame}
-    \frametitle{Definition: Opaque Pointer}
-    An {\tt Opaque Pointer} is a pointer to an object whose internal
-    representation is private to the user of an API.  Since opaque pointers
-    should never be dereferenced the process of marshalling them is greatly
-    simplified.
-\end{frame}
-\begin{frame}
     \frametitle{Marshalling Gotchas}
     There are a few specific things that we need to be aware of before we get
     started:
@@ -313,6 +306,23 @@ generate_message:
             you exposing a native API implemented in Haskell}
     \end{itemize}
 \end{frame}
+\begin{frame}
+    \frametitle{Definition: Opaque Pointer}
+    An {\tt Opaque Pointer} is a pointer to an object whose internal
+    representation is private to the user of an API. An opaque pointer is
+    often represented as an existential type.  Opaque pointers do not need to
+    be marshalled.
+\end{frame}
+\begin{frame}[fragile]
+    \frametitle{Two Ways of Creating Opaque Types}
+
+    \begin{lstlisting}{language=haskell,frame=single}
+data MyType = MyType
+type MyTypeHandle = Ptr MyType
+newtype MyOneshotHandle = Ptr MyOneshotHandle
+    \end{lstlisting}
+\end{frame}
+
 \begin{frame}[fragile]
     \frametitle{Storable Typeclass}
     \begin{lstlisting}{language=haskell}
@@ -336,12 +346,20 @@ generate_message:
 \end{frame}
 \begin{frame}
     \frametitle{Implementing Storable}
-
-    The functions required to implement a storable may differ on different
-    architectures.
-
-    {\tt sizeOf} should return the size, in bytes, of the data structure.
-    {\tt alignment} should return the byte alignment.  
+    \begin{itemize}
+        \item {{\tt sizeOf} \\
+                {\it Return the size in bytes of the data structure}
+            }
+        \item {{\tt alignment} \\
+                {\it Return the byte alignment of the data structure}
+            }
+        \item {One of: {\tt peek}, {\tt peekElemOff}, {\tt peekByteOff} \\
+                {\it Read data from the provided memory address}
+            }
+        \item {One of: {\tt poke}, {\tt pokeElemOff}, {\tt pokeByteOff} \\
+                {\it Write data to the provided memory address}
+            }
+    \end{itemize}
 \end{frame}
 \begin{frame}[fragile]
     \frametitle{Storable Example}
@@ -371,9 +389,6 @@ instance Storable NfGenMsg where
                     return ()
     \end{lstlisting}
 \end{frame}
-% \subsection{Foreign Types}
-% \subsection{Haskell Types}
-% \subsection{The Storable Typeclass}
 
 \section{Functions}
 % \subsection{Calling Native Functions}
