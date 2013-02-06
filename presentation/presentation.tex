@@ -348,13 +348,13 @@ generate_message:
     \begin{lstlisting}{language=haskell}
 data NfGenMsg = NfGenMsg {packet_id :: CUInt, hw_protocol :: CUShort, hook :: CUChar}
 instance Storable NfGenMsg where
-    sizeOf _    = sizeOf (0 :: CUInt)   +
-                  sizeOf (0 :: CUShort) +
-                  sizeOf (0 :: CUChar)
+    sizeOf _    = sizeOf (undefined :: CUInt)   +
+                  sizeOf (undefined :: CUShort) +
+                  sizeOf (undefined :: CUChar)
     alignment _ = 16 -- > 8 bytes so we should be 16-byte aligned on x86_64
     peek p      = let ptr1 = castPtr p :: Ptr CUInt
-                      ptr2 = castPtr (plusPtr ptr1 (sizeOf (0 :: CUInt))) :: Ptr CUShort
-                      ptr3 = castPtr (plusPtr ptr2 (sizeOf (0 :: CUShort))) :: Ptr CUChar
+                      ptr2 = castPtr (plusPtr ptr1 (sizeOf (undefined :: CUInt)))   :: Ptr CUShort
+                      ptr3 = castPtr (plusPtr ptr2 (sizeOf (undefined :: CUShort))) :: Ptr CUChar
                   in do
                       v1 <- peek ptr1
                       v2 <- peek ptr2
