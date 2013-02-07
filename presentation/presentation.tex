@@ -26,7 +26,8 @@
     showstringspaces=false,
     showtabs=false,
     stringstyle=\color{string},
-    tabsize=4
+    tabsize=4,
+    frame=shadowbox
 }
 
 \newcommand{\chref}[3] {
@@ -268,7 +269,58 @@ generate_message:
     \end{itemize}
 \end{frame}
 
-\section{Marshalling}
+\section{Native and Haskell Types}
+\subsection{Basic Type Mapping}
+\begin{frame}
+    \frametitle{FFI Supplied Types}
+
+    The FFI provides for Haskell analogues to many basic C datatypes in {\tt
+    Foreign.C.Types}, and a set of utility functions for dealing with C Strings
+    in {\tt Foreign.C.String}
+\end{frame}
+\begin{frame}
+    \frametitle{Common Types in {\tt Foreign.C.Types}}
+    \begin{tiny}
+        \begin{table}
+            \begin{tabular}{| l | r |}
+                \hline
+                {\bf C Type} & {\bf Haskell Type} \\ \hline
+                {\tt int8\_t}, {\tt char} & {\tt CChar} \\ \hline
+                {\tt int}, {\tt int32\_t}, {\tt long}& {\tt CInt} \\ \hline
+                {\tt unsigned}, {\tt unsigned int}, {\tt unsigned long},
+                {\tt uint32\_t} & {\tt CUInt} \\ \hline
+                {\tt long long}, {\tt int64\_t} & {\tt CLong} \\ \hline
+                {\tt time\_t} & {\tt CTime} \\ \hline
+                {\tt size\_t} & {\tt CSize} \\ \hline
+                {\tt ptrdiff\_t} & {\tt CPtrdiff} \\ \hline
+            \end{tabular}
+            \caption{\tiny A Mapping Between C and Haskell Types}
+        \end{table}
+    \end{tiny}
+\end{frame}
+\begin{frame}[fragile]
+    \frametitle{C Strings}
+    The FFI provides a number of utility functions for working with C Strings.
+    {\tt Data.ByteString} also provides functions for marshalling between
+    ByteString and CString types.
+    \begin{lstlisting}{language=Haskell}
+    type CString = Ptr CChar
+    type CStringLen = (Ptr CChar, Int)
+    \end{lstlisting}
+\end{frame}
+\begin{frame}
+    \frametitle{Useful C String Functions}
+    \begin{tt}
+    \begin{itemize}
+        \item{newCString :: String -> IO CString}
+        \item{peekCString :: CString -> IO String}
+        \item{withCString :: String -> (CString -> IO a) -> IO a}
+        \item{packCString :: CString -> IO ByteString}
+        \item{useAsCString :: ByteString -> (CString -> IO a) -> IO a}
+    \end{itemize}
+    \end{tt}
+\end{frame}
+\subsection{Marshalling}
 \begin{frame}
     \frametitle{Marshalling}
     Marshalling is how we make data shared between C and Haskell mutually
@@ -308,21 +360,20 @@ generate_message:
 \end{frame}
 \begin{frame}
     \frametitle{Definition: Opaque Pointer}
-    An {\tt Opaque Pointer} is a pointer to an object whose internal
-    representation is private to the user of an API. An opaque pointer is
-    often represented as an existential type.  Opaque pointers do not need to
-    be marshalled.
+    An opaque pointer does not need to be marshalled and can in most cases be
+    treated as a pointer to an existential type.  Using mutators instead of
+    direct structure access in native APIs can simplify their use in the FFI
+    because of this.
 \end{frame}
 \begin{frame}[fragile]
-    \frametitle{Two Ways of Creating Opaque Types}
+    \frametitle{Creating Opaque Types}
 
-    \begin{lstlisting}{language=haskell,frame=single}
+    \begin{lstlisting}{language=haskell,frame=double}
 data MyType = MyType
 type MyTypeHandle = Ptr MyType
 newtype MyOneshotHandle = Ptr MyOneshotHandle
     \end{lstlisting}
 \end{frame}
-
 \begin{frame}[fragile]
     \frametitle{Storable Typeclass}
     \begin{lstlisting}{language=haskell}
@@ -353,35 +404,35 @@ newtype MyOneshotHandle = Ptr MyOneshotHandle
         \item {{\tt alignment} \\
                 {\it Return the byte alignment of the data structure}
             }
-        \item {One of: {\tt peek}, {\tt peekElemOff}, {\tt peekByteOff} \\
+        \item {One of: {\tt peek}, {\tt peekElemOff}, or {\tt peekByteOff} \\
                 {\it Read data from the provided memory address}
             }
-        \item {One of: {\tt poke}, {\tt pokeElemOff}, {\tt pokeByteOff} \\
+        \item {One of: {\tt poke}, {\tt pokeElemOff}, or {\tt pokeByteOff} \\
                 {\it Write data to the provided memory address}
             }
     \end{itemize}
 \end{frame}
 \begin{frame}[fragile]
-    \frametitle{Storable Example}
-    \begin{lstlisting}{language=haskell}
+    \frametitle{Storable Example: NetfilterQueue.hs}
+    \begin{lstlisting}{language=Haskell}
 data NfGenMsg = NfGenMsg {packet_id :: CUInt, hw_protocol :: CUShort, hook :: CUChar}
 instance Storable NfGenMsg where
-    sizeOf _    = sizeOf (undefined :: CUInt)   +
-                  sizeOf (undefined :: CUShort) +
-                  sizeOf (undefined :: CUChar)
+    sizeOf _    = sizeOf (0 :: CUInt)   +
+                  sizeOf (0 :: CUShort) +
+                  sizeOf (0 :: CUChar)
     alignment _ = 16 -- > 8 bytes so we should be 16-byte aligned on x86_64
-    peek p      = let ptr1 = castPtr p :: Ptr CUInt
-                      ptr2 = castPtr (plusPtr ptr1 (sizeOf (undefined :: CUInt)))   :: Ptr CUShort
-                      ptr3 = castPtr (plusPtr ptr2 (sizeOf (undefined :: CUShort))) :: Ptr CUChar
+    peek p      = let ptr1 = castPtr p
+                      ptr2 = castPtr $ ptr1 `plusPtr` sizeOf (0 :: CUInt)
+                      ptr3 = castPtr $ ptr2 `plusPtr` sizeOf (0 :: CUShort)
                   in do
                       v1 <- peek ptr1
                       v2 <- peek ptr2
                       v3 <- peek ptr3
                       return $ NfGenMsg (fromBigEndian v1) (fromBigEndian v2) v3
     poke ptr (NfGenMsg pkt_id hw_proto hk) =
-                let ptr1 = (castPtr ptr) :: Ptr CUInt
-                    ptr2 = castPtr (plusPtr ptr1 (sizeOf (0 :: CUInt))) :: Ptr CUShort
-                    ptr3 = castPtr (plusPtr ptr2 (sizeOf (0 :: CUShort))) :: Ptr CUChar
+                let ptr1 = castPtr ptr
+                    ptr2 = castPtr $ ptr1 `plusPtr` sizeOf (0 :: CUInt)
+                    ptr3 = castPtr $ ptr2 `plusPtr` sizeOf (0 :: CUShort)
                 in do
                     poke ptr1 $ toBigEndian pkt_id
                     poke ptr2 $ toBigEndian hw_proto
