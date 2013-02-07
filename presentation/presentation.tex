@@ -2,6 +2,7 @@
 \documentclass{beamer}
 \title{Understanding The Haskell FFI}
 \author{Tim Skinner}
+\institute{tim@timskinner.net}
 \date{\today}
 \mode<presentation> {\usetheme{Madrid}}
 
@@ -422,16 +423,108 @@ Symbol table '.symtab' contains 14 entries:
     just functions.
 \end{frame}
 \begin{frame}
+    \frametitle{Importing and Exporting}
+
+    When we are importing or exporting a foreign declaration we need to define
+    both what the name for it is in our haskell application (the {\it var}), and
+    the name that appears in the ELF symbol table (the {\it impent} or {\it
+    expent}).
+
+    The calling convention allows us to specify what standard calling convention
+    should be used.  Although there are several reserved keywords for calling
+    conventions, only {\tt ccall} is widely supported at this time.
+\end{frame}
+\begin{frame}
+    \frametitle{Safety}
+
+    {\tt safe} and {\tt unsafe} refers to whether the behavior of the
+    application is well defined if a native function executes a callback into
+    the Haskell application.  Any data access, other than the formal parameters
+    of the function or stable pointers, accessed by an {\tt unsafe} function,
+    results in undefined behavior.
+
+    When unspecified, {\tt safe} is the default behavior.  {\tt unsafe} calls
+    are generally faster.
+\end{frame}
+\begin{frame}
+    \frametitle{Types of Native Declarations}
+
+    Native declarations must be well typed.  Just like haskell functions,
+    native functions that have side effects should return a value in the
+    {\tt IO} monad.  Pure native functions need not return their value inside of
+    {\tt IO}.
+\end{frame}
+\begin{frame}
     \frametitle{Foreign Declaration: Example}
     \begin{exampleblock}{Sample Foreign Function Declarations}
         \lstinputlisting[language=Haskell]{"../samples/snippets/foreign_import_example.hs"}
     \end{exampleblock}
 \end{frame}
+\begin{frame}
+    \frametitle{Putting it all together}
+    \begin{exampleblock}{C Program Exporting A Native Library}
+        \lstinputlisting[language=C]{"../samples/hello_lnk/hello_c.c"}
+    \end{exampleblock}
+    \begin{exampleblock}{Haskell Application Using FFI}
+        \lstinputlisting[language=Haskell]{"../samples/hello_lnk/hello_hs.hs"}
+    \end{exampleblock}
+\end{frame}
+\begin{frame}
+    \frametitle{Putting it all together (cont.)}
+    \begin{exampleblock}{Building and Running}
+        \begin{tiny}
+        \cmd{ghc -c hello\_hs.hs -o hello\_hs.o}
+        \cmd{gcc -c hello\_c.c -o hello\_c.o}
+        \cmd{ghc hello\_hs.o hello\_c.o -o hello}
+    \end{tiny}
+    \end{exampleblock}
+\end{frame}
+\begin{frame}
+    \frametitle{Some More Examples}
+    \begin{itemize}
+        \item{fltk-haskell}
+        \item{netfilter-haskell}
+    \end{itemize}
+\end{frame}
 
-\section{Tools}
-% \subsection{Compilation and Linking}
-% \subsection{Automated Wrappers}
+\section{FFI Guidelines}
+\begin{frame}
+    \frametitle{Guidelines}
+    There are no hard and fast rules on how or when to use the FFI.  Here are
+    some guidelines I've come up with based on my own experiences.
 
-\section{Idioms}
+    \begin{itemize}
+        \item{Creating Haskell bindings to Native libraries is a bit easier than
+            going the other way around}
+
+        \item{You can create a wrapper around a native library in it's own
+            language, then wrap that, to make things go more smoothly}
+
+        \item{Use mutators to keep pointers opaque to avoid doing a bunch of
+            marshalling}
+
+        \item{{\tt const}-correctness in C libraries makes managing side effects
+            much easier}
+
+        \item{Bang patterns can help manage complications introduced by
+            eagerness mismatches between Haskell and native libraries}
+            
+        \item{When possible, know your target architecture(s) well.  It will
+            save you a ton of pain when dealing with marshalling}
+    \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{hsc2hs}
+    So far we've talked about using the FFI manually. {\tt hsc2hs} helps
+    automate the process of creating haskell bindings to C libraries.
+    
+    It works well in the general case, but it doesn't abstract away the details
+    of the FFI, and sometimes requires manual intervention, so it's best to
+    understand what's going on under the hood before getting started wtih it.
+\end{frame}
+\begin{frame}
+    \frametitle{Questions?}
+    \center{\hfill Questions? \hfill}
+\end{frame}
 
 \end{document}
