@@ -3,7 +3,7 @@
 \title{Understanding The Haskell FFI}
 \author{Tim Skinner}
 \date{\today}
-\mode<presentation> { \usetheme{Berlin} }
+\mode<presentation> {\usetheme{Montpellier}}
 
 \usepackage[english]{babel}
 \usepackage[latin1]{inputenc}
@@ -44,13 +44,6 @@
 
 \begin{frame}
     \titlepage
-\end{frame}
-
-\section*{Outline}
-\begin{frame}
-    \begin{tiny}
-        \tableofcontents
-    \end{tiny}
 \end{frame}
 
 \section{Introduction}
@@ -223,8 +216,8 @@ Relocation section '.rela.text' at offset 0x678 contains 6 entries:
 \begin{frame}[fragile]
     \frametitle{An Excerpt from {\tt hello.s}}
 
-    \begin{lstlisting}{language={[gas]Assembler}}
-
+    \begin{tiny}
+        \begin{verbatim}
 # The start of our function
 generate_message:
 .LFB0:
@@ -250,7 +243,8 @@ generate_message:
         call    asprintf
         movq    -8(%rbp), %rax
         leave
-        \end{lstlisting}
+        \end{verbatim}
+    \end{tiny}
 \end{frame}
 
 \begin{frame}
@@ -270,7 +264,6 @@ generate_message:
 \end{frame}
 
 \section{Native and Haskell Types}
-\subsection{Basic Type Mapping}
 \begin{frame}
     \frametitle{FFI Supplied Types}
 
@@ -310,7 +303,6 @@ generate_message:
 \end{frame}
 \begin{frame}
     \frametitle{Useful C String Functions}
-    \begin{tt}
     \begin{itemize}
         \item{newCString :: String -> IO CString}
         \item{peekCString :: CString -> IO String}
@@ -318,9 +310,7 @@ generate_message:
         \item{packCString :: CString -> IO ByteString}
         \item{useAsCString :: ByteString -> (CString -> IO a) -> IO a}
     \end{itemize}
-    \end{tt}
 \end{frame}
-\subsection{Marshalling}
 \begin{frame}
     \frametitle{Marshalling}
     Marshalling is how we make data shared between C and Haskell mutually
