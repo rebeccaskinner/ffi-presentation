@@ -1,10 +1,12 @@
+CC= gcc
+CFLAGS=-std=gnu99 -Wall -Wextra -Werror -O0
 all: hello
 
 %.o:%.hs
 	ghc -c $(<) -o $(@)
 
 %/o:%.c
-	gcc -std=gnu99 -c $(<) -o $(@)
+	gcc -c $(<) -o $(@)
 
 hello:hello_hs.o hello_c.o
 	ghc $(^) -o $(@)
